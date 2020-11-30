@@ -133,6 +133,11 @@ class Kinematics {
   var isImg1Loaded;
   var isImg2Loaded;
 
+  var xPrev = -1;
+  var yPrev = -1;
+  var xPrimePrev = -1;
+  var yPrimePrev = -1;
+
   window.addEventListener('load', function() {
     document.getElementById('input1').addEventListener('change', function() {
         if (this.files && this.files[0]) {
@@ -197,6 +202,8 @@ class Kinematics {
         };
         canvas.node.onmouseup = function(e) {
             canvas.isDrawing = false;
+            xPrev = -1;
+            yPrev = -1;
         };
         parent.appendChild(canvas.node);
         return canvas;
@@ -258,10 +265,26 @@ class Kinematics {
             var red = '#ff0000';
 
             console.log('x', x, ', y', y, ', m13Sq', m13Sq, ', m23Sq', m23Sq, ', mPrime', mPrime, ', thetaPrime', thetaPrime)
+            console.log(xPrev, yPrev);
 
-            ctx1.fillCircle(x, y, radius, black);
-            // ctx2.fillCircle(3 * x, 3 * y, radius, red);
-            ctx2.fillCircle(xPrime, yPrime, radius, red);
+            if (xPrev != -1) {
+              ctx1.beginPath();
+              ctx1.moveTo(xPrev, yPrev);
+              ctx1.lineTo(x, y);
+              ctx1.strokeStyle = black;
+              ctx1.stroke();
+
+              ctx2.beginPath();
+              ctx2.moveTo(xPrimePrev, yPrimePrev);
+              ctx2.lineTo(xPrime, yPrime);
+              ctx2.strokeStyle = red;
+              ctx2.stroke();
+            }
+
+            xPrev = x;
+            yPrev = y;
+            xPrimePrev = xPrime;
+            yPrimePrev = yPrime;
         };
 
         canvas2.node.onmousemove = function(e) {
