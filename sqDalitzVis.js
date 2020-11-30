@@ -246,11 +246,9 @@ class Kinematics {
             var yMin = 0;
             var yMax = 400;
 
+              // Origin is at top left
             var m13Sq = kin.scale(xMin, xMax, m13SqMin, m13SqMax, x)
-            var m23Sq = kin.scale(xMin, xMax, m23SqMin, m23SqMax, y)
-
-            // Origin is at top left
-            m23Sq = m23SqMax - m23Sq
+            var m23Sq = kin.scale(xMin, xMax, m23SqMax, m23SqMin, y)
 
             kin.updateKinematics(m13Sq, m23Sq)
 
@@ -258,14 +256,14 @@ class Kinematics {
             var thetaPrime = kin.thPrime
 
             var xPrime = kin.scale(0, 1, xMin, xMax, mPrime)
-            var yPrime = kin.scale(0, 1, yMin, yMax, thetaPrime) // No folding
+            var yPrime = kin.scale(0, 1, yMax, yMin, thetaPrime) // No folding
 
             var radius = 1; // or whatever
             var black = '#000000';
             var red = '#ff0000';
 
             console.log('x', x, ', y', y, ', m13Sq', m13Sq, ', m23Sq', m23Sq, ', mPrime', mPrime, ', thetaPrime', thetaPrime)
-            console.log(xPrev, yPrev);
+            console.log(xPrime, yPrime);
 
             if (xPrev != -1) {
               ctx1.beginPath();
