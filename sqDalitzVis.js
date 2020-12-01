@@ -64,6 +64,32 @@ class Kinematics {
 
   }
 
+  updateMassSquaresSDP(mPrime, thPrime) {
+
+    this.mPrime = mPrime;
+    this.thPrime = thPrime;
+
+    var m12 = 0.5 * this.mDiff[2] * ( 1.0 + Math.cos( Math.PI * mPrime ) ) + this.mMin[2];
+    var c12 = Math.cos( Math.PI * thPrime );
+
+    this.updateMassSquaresSDP_12(m12, c12)
+
+  }
+
+  updateMassSquaresSDP_12(m12, c12) {
+
+    this.mij[2] = m12
+    this.mijSq[2] = m12*m12
+    this.cij[2] = c12
+
+    this.mijSq[1] = this.mFromC( 0, 1, 2 )
+    this.mij[1] = Math.sqrt( this.mijSq[1] )
+
+    this.mijSq[0] = this.calcThirdMassSq( this.mijSq[2], this.mijSq[1] )
+    this.mij[0] = Math.sqrt( this.mijSq[0] )
+
+  }
+
   calcThirdMassSq(first, second) {
     return this.mPSq + this.mSqDTot - first - second;
   }
@@ -89,16 +115,18 @@ class Kinematics {
   }
 
   mFromC(i, j, k) {
-    ei = this.e_i_CMS_ij(i, j, k);
-    ek = this.e_k_CMS_ij(i, j, k);
 
-    qi = this.pCalc(ei, this.mSq[i]);
-    qk = this.pCalc(ek, this.mSq[k]);
+    var ei = this.e_i_CMS_ij(i, j, k);
+    var ek = this.e_k_CMS_ij(i, j, k);
+
+    var qi = this.pCalc(ei, this.mSq[i]);
+    var qk = this.pCalc(ek, this.mSq[k]);
 
     return this.mSq[i] + this.mSq[k] + 2 * ei * ek - 2 * qi * qk * this.cij[k];
   }
 
   cFromM(i, j, k) {
+
     var ei = this.e_i_CMS_ij(i, j, k);
     var ek = this.e_k_CMS_ij(i, j, k);
 
@@ -116,8 +144,9 @@ class Kinematics {
   }
 
   calcSqDPVars() {
+
     var val = 2 * (this.mij[2] - this.mMin[2]) / this.mDiff[2] - 1;
-    console.log(val, this.mij[2], this.cij[2], (1./Math.PI) * Math.acos(val))
+
     this.mPrime = (1./Math.PI) * Math.acos(val);
     this.thPrime = (1./Math.PI) * Math.acos(this.cij[2]);
   }
@@ -186,24 +215,13 @@ class Kinematics {
         canvas.node.width = width || 100;
         canvas.node.height = height || 100;
 
-        var ctx = canvas.context;
-
-        // define a custom fillCircle method
-        ctx.fillCircle = function(x, y, radius, fillColor) {
-            this.fillStyle = fillColor;
-            this.beginPath();
-            this.moveTo(x, y);
-            this.arc(x, y, radius, 0, Math.PI * 2, false);
-            this.fill();
-        };
-
         canvas.node.onmousedown = function(e) {
             canvas.isDrawing = true;
         };
         canvas.node.onmouseup = function(e) {
             canvas.isDrawing = false;
             xPrev = -1;
-            yPrev = -1;
+            xPrimePrev = -1;
         };
         parent.appendChild(canvas.node);
         return canvas;
@@ -246,19 +264,18 @@ class Kinematics {
             var yMin = 0;
             var yMax = 400;
 
-              // Origin is at top left
-            var m13Sq = kin.scale(xMin, xMax, m13SqMin, m13SqMax, x)
-            var m23Sq = kin.scale(xMin, xMax, m23SqMax, m23SqMin, y)
+            // Origin is at top left
+            var m13Sq = kin.scale(xMin, xMax, m13SqMin, m13SqMax, x);
+            var m23Sq = kin.scale(yMin, yMax, m23SqMax, m23SqMin, y);
 
-            kin.updateKinematics(m13Sq, m23Sq)
+            kin.updateKinematics(m13Sq, m23Sq);
 
-            var mPrime = kin.mPrime
-            var thetaPrime = kin.thPrime
+            var mPrime = kin.mPrime;
+            var thetaPrime = kin.thPrime;
 
-            var xPrime = kin.scale(0, 1, xMin, xMax, mPrime)
-            var yPrime = kin.scale(0, 1, yMax, yMin, thetaPrime) // No folding
+            var xPrime = kin.scale(0, 1, xMin, xMax, mPrime);
+            var yPrime = kin.scale(0, 1, yMax, yMin, thetaPrime); // No folding
 
-            var radius = 1; // or whatever
             var black = '#000000';
             var red = '#ff0000';
 
@@ -281,23 +298,69 @@ class Kinematics {
 
             xPrev = x;
             yPrev = y;
+
             xPrimePrev = xPrime;
             yPrimePrev = yPrime;
         };
 
         canvas2.node.onmousemove = function(e) {
+
             if (!canvas2.isDrawing) {
                return;
             }
 
-            var x = e.pageX - this.offsetLeft;
-            var y = e.pageY - this.offsetTop;
+            var xPrime = e.pageX - this.offsetLeft;
+            var yPrime = e.pageY - this.offsetTop;
 
-            var radius = 1; // or whatever
+            var xPrimeMin = 0;
+            var xPrimeMax = 400;
+
+            var yPrimeMin = 0;
+            var yPrimeMax = 400;
+
+            var mPrime = kin.scale(xPrimeMin, xPrimeMax, 0, 1, xPrime);
+            var thPrime = kin.scale(yPrimeMin, yPrimeMax, 1, 0, yPrime);
+
+            kin.updateMassSquaresSDP(mPrime, thPrime);
+
+            var m13Sq = kin.mijSq[1];
+            var m23Sq = kin.mijSq[0];
+
+            var m13SqMin = kin.mMin[1] ** 2;
+            var m13SqMax = kin.mMax[1] ** 2;
+
+            var m23SqMin = kin.mMin[0] ** 2;
+            var m23SqMax = kin.mMax[0] ** 2;
+
+
+            // Origin is at top left
+            var x = kin.scale(m13SqMin, m13SqMax, xPrimeMin, xPrimeMax, m13Sq)
+            var y = kin.scale(m23SqMin, m23SqMax, yPrimeMax, yPrimeMin, m23Sq) // No folding
+
             var black = '#000000';
             var red = '#ff0000';
-            ctx1.fillCircle(x / 3., y / 3., radius, black);
-            ctx2.fillCircle(x, y, radius, red);
+
+            if (xPrimePrev != -1) {
+
+              ctx2.beginPath();
+              ctx2.moveTo(xPrimePrev, yPrimePrev);
+              ctx2.lineTo(xPrime, yPrime);
+              ctx2.strokeStyle = black;
+              ctx2.stroke();
+
+              ctx1.beginPath();
+              ctx1.moveTo(xPrev, yPrev);
+              ctx1.lineTo(x, y);
+              ctx1.strokeStyle = red;
+              ctx1.stroke();
+            }
+
+            xPrev = x;
+            yPrev = y;
+
+            xPrimePrev = xPrime;
+            yPrimePrev = yPrime;
+
         };
 
     }
