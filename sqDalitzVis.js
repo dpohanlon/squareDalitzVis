@@ -157,6 +157,12 @@ class Kinematics {
 
 }
 
+var mP = 5.279;
+var m1 = 0.494;
+var m2 = 0.140;
+var m3 = 0.140;
+var kin = new Kinematics(mP, m1, m2, m3);
+
 (function() {
 
   var isImg1Loaded;
@@ -227,10 +233,41 @@ class Kinematics {
         return canvas;
     }
 
+    function getInput() {
+
+      var mPField = document.getElementById("mP").value;
+      var m1Field = document.getElementById("m1").value;
+      var m2Field = document.getElementById("m2").value;
+      var m3Field = document.getElementById("m3").value;
+
+      if (mPField != "") {
+        mP = parseFloat(mPField);
+        console.log('NOT NULL!');
+      } else {
+        console.log('NULL!');
+      }
+
+      if (m1Field != "") {
+        m1 = parseFloat(m1Field);
+      }
+
+      if (m2Field != "") {
+        m2 = parseFloat(m2Field);
+      }
+
+      if (m3Field != "") {
+        m3 = parseFloat(m3Field);
+      }
+
+      kin = new Kinematics(mP, m1, m2, m3);
+    }
+
     function init2(container, container2, width, height, fillColor) {
 
         var canvas1 = createCanvas(container, width, height, fillColor);
         var canvas2 = createCanvas(container2, width, height, fillColor);
+
+        getInput();
 
         var ctx1 = canvas1.context;
         var ctx2 = canvas2.context;
@@ -279,8 +316,9 @@ class Kinematics {
             var black = '#000000';
             var red = '#ff0000';
 
-            console.log('x', x, ', y', y, ', m13Sq', m13Sq, ', m23Sq', m23Sq, ', mPrime', mPrime, ', thetaPrime', thetaPrime)
-            console.log(xPrime, yPrime);
+            // console.log('x', x, ', y', y, ', m13Sq', m13Sq, ', m23Sq', m23Sq, ', mPrime', mPrime, ', thetaPrime', thetaPrime)
+            // console.log(xPrime, yPrime);
+            console.log('mP', kin.mP);
 
             if (xPrev != -1) {
               ctx1.beginPath();
@@ -365,6 +403,26 @@ class Kinematics {
 
     }
 
-    var kin = new Kinematics(5.279, 0.494, 0.140, 0.140) // Kpipi
+    // var mP = 5.279;
+    // var m1 = 0.494;
+    // var m2 = 0.140;
+    // var m3 = 0.140;
+    // var kin;
+
+  // function setMasses() {
+  //   mP = document.getElementById("fname").value;
+  //   console.log(mP);
+  //   kin = new Kinematics(mP, m1, m2, m3);
+  // }
 
 })();
+
+// function setMasses() {
+//
+//   mP = parseFloat(document.getElementById("mP").value);
+//   m1 = parseFloat(document.getElementById("m1").value);
+//   m2 = parseFloat(document.getElementById("m2").value);
+//   m3 = parseFloat(document.getElementById("m3").value);
+//
+//   kin = new Kinematics(mP, m1, m2, m3);
+// }
