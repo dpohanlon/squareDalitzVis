@@ -195,6 +195,7 @@ var fold = false;
             img.onload = image2Loaded;
         }
     });
+
   });
 
   function imagesLoaded() {
@@ -242,7 +243,7 @@ var fold = false;
       var m2Field = document.getElementById("m2").value;
       var m3Field = document.getElementById("m3").value;
 
-      fold = document.getElementById("fold").value;
+      fold = document.getElementById("fold").checked;
 
       if (mPField != "") {
         mP = parseFloat(mPField);
