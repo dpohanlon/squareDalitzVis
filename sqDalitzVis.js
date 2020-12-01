@@ -163,6 +163,8 @@ var m2 = 0.140;
 var m3 = 0.140;
 var kin = new Kinematics(mP, m1, m2, m3);
 
+var fold = false;
+
 (function() {
 
   var isImg1Loaded;
@@ -240,11 +242,10 @@ var kin = new Kinematics(mP, m1, m2, m3);
       var m2Field = document.getElementById("m2").value;
       var m3Field = document.getElementById("m3").value;
 
+      fold = document.getElementById("fold").value;
+
       if (mPField != "") {
         mP = parseFloat(mPField);
-        console.log('NOT NULL!');
-      } else {
-        console.log('NULL!');
       }
 
       if (m1Field != "") {
@@ -311,7 +312,11 @@ var kin = new Kinematics(mP, m1, m2, m3);
             var thetaPrime = kin.thPrime;
 
             var xPrime = kin.scale(0, 1, xMin, xMax, mPrime);
-            var yPrime = kin.scale(0, 1, yMax, yMin, thetaPrime); // No folding
+
+            var yPrime = kin.scale(0, 1, yMax, yMin, thetaPrime);
+            if (fold) {
+              yPrime = kin.scale(0, 0.5, yMax, yMin, thetaPrime);
+            }
 
             var black = '#000000';
             var red = '#ff0000';
@@ -354,6 +359,9 @@ var kin = new Kinematics(mP, m1, m2, m3);
 
             var mPrime = kin.scale(xPrimeMin, xPrimeMax, 0, 1, xPrime);
             var thPrime = kin.scale(yPrimeMin, yPrimeMax, 1, 0, yPrime);
+            if (fold) {
+              thPrime = kin.scale(yPrimeMin, yPrimeMax, 0.5, 0, yPrime);
+            }
 
             kin.updateMassSquaresSDP(mPrime, thPrime);
 
